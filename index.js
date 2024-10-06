@@ -9,8 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const uri =
-  `mongodb+srv://collegiumAdmin:${process.env.DB_PASSWORD}@bluebirddb.qlnhkpa.mongodb.net/?retryWrites=true&w=majority&appName=BlueBirdDB`;
+const uri = `mongodb+srv://collegiumAdmin:${process.env.DB_PASSWORD}@bluebirddb.qlnhkpa.mongodb.net/?retryWrites=true&w=majority&appName=BlueBirdDB`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -23,24 +22,46 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server
     await client.connect();
+
+    const collegesCollection = client.db("collegiumDB").collection("colleges");
+
+    // Define the /colleges endpoint
+    app.get("/colleges", async (req, res) => {
+      try {
+        const result = await collegesCollection.find().toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching colleges:", error);
+        res.status(500).send("Error fetching colleges");
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } catch (error) {
+    console.error("Error connecting to MongoDB:", error);
   }
 }
+
+// Call the run function to connect to MongoDB
 run().catch(console.dir);
 
+// Define the root endpoint
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server is running on Port ${port}`);
+});
+
+// Close the MongoDB client when the application is shutting down
+process.on('SIGINT', async () => {
+  await client.close();
+  console.log("MongoDB client closed.");
+  process.exit(0);
 });
