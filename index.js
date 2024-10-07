@@ -26,6 +26,9 @@ async function run() {
     await client.connect();
 
     const collegesCollection = client.db("collegiumDB").collection("colleges");
+    const admissionsCollection = client
+      .db("collegiumDB")
+      .collection("admissions");
 
     // Define the /colleges endpoint
     app.get("/colleges", async (req, res) => {
@@ -43,6 +46,16 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await collegesCollection.findOne(query);
       res.send(result);
+    });
+
+    app.post("/admissions", async (req, res) => {
+      const admissionData = req.body;
+      const result = await admissionsCollection.insertOne(admissionData);
+
+      res.status(201).json({
+        message: "Admission data saved successfully",
+        id: result.insertedId,
+      });
     });
 
     // Send a ping to confirm a successful connection
