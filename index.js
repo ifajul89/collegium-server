@@ -22,9 +22,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server
-    await client.connect();
-
     const collegesCollection = client.db("collegiumDB").collection("colleges");
     const admissionsCollection = client
       .db("collegiumDB")
@@ -57,12 +54,6 @@ async function run() {
         id: result.insertedId,
       });
     });
-
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
   }
