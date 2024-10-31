@@ -47,12 +47,31 @@ async function run() {
 
     app.post("/admissions", async (req, res) => {
       const admissionData = req.body;
-      const result = await admissionsCollection.insertOne(admissionData);
+      const { candidateId } = admissionData;
 
-      res.status(201).json({
-        message: "Admission data saved successfully",
-        id: result.insertedId,
-      });
+      try {
+        // Check if a candidate with the same ID already exists
+        const existingStudent = await admissionsCollection.findOne({
+          candidateId: candidateId,
+        });
+
+        if (existingStudent) {
+          // Send a 409 Conflict status if the candidateId already exists
+          return res.status(409).json({ message: "Student already admitted" });
+        }
+
+        // If no existing record is found, insert the new admission data
+        const result = await admissionsCollection.insertOne(admissionData);
+
+        // Send success response with status 201 (Created)
+        res.status(201).json({
+          message: "Admission data saved successfully",
+          id: result.insertedId,
+        });
+      } catch (error) {
+        console.error("Error processing admission:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
     });
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
