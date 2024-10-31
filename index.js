@@ -45,6 +45,23 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/admission/:id", async (req, res) => {
+      try {
+        const id = req.params.id; // Extract the id from the URL parameters
+        const query = { candidateId: id }; // Query to find the admission by candidateId
+        const result = await admissionsCollection.findOne(query);
+    
+        if (!result) {
+          return res.status(404).json({ message: "Admission not found" });
+        }
+    
+        res.status(200).json(result); // Send the admission data as JSON
+      } catch (error) {
+        console.error("Error fetching admission data:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     app.post("/admissions", async (req, res) => {
       const admissionData = req.body;
       const { candidateId } = admissionData;
